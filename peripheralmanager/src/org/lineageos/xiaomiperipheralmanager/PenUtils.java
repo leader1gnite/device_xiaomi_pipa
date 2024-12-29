@@ -7,91 +7,82 @@
 package org.lineageos.xiaomiperipheralmanager;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.os.SystemProperties;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.InputDevice;
+
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 
 public class PenUtils {
 
     private static final String TAG = "XiaomiPeripheralManagerPenUtils";
     private static final boolean DEBUG = false;
 
-    private static final int PEN_VENDOR_ID = 6421;
-    private static final int PEN_PRODUCT_ID = 19841;
+    private static final int penVendorId = 6421;
+    private static final int penProductId = 19841;
+
+    private static InputManager mInputManager;
+
     private static final String STYLUS_KEY = "stylus_switch_key";
 
-    private static Context mContext;
-    private static InputManager mInputManager;
-    private static RefreshRateUtils mRefreshRateUtils;
-    private static SharedPreferences mPreferences;
+    private static SharedPreferences preferences;
+    private static RefreshUtils mRefreshUtils;
 
     public static void setup(Context context) {
-        mContext = context;
         mInputManager = (InputManager) context.getSystemService(Context.INPUT_SERVICE);
-        mRefreshRateUtils = new RefreshRateUtils(context);
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
         mInputManager.registerInputDeviceListener(mInputDeviceListener, null);
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mRefreshUtils = new RefreshUtils(context);
         refreshPenMode();
     }
 
-    // Enable pen mode and update refresh rates
     public static void enablePenMode() {
-        Log.d(TAG, "enablePenMode: Activating Pen Mode");
+        Log.d(TAG, "enablePenMode: Enable Pen Mode");
         SystemProperties.set("persist.vendor.parts.pen", "18");
-        mRefreshRateUtils.setPenModeRefreshRate();
+        Log.d(TAG, "enablePenMode: Setting Refresh Rates for Pen");
+        mRefreshUtils.setPenRefreshRate();
     }
 
-    // Disable pen mode and restore default refresh rates
     public static void disablePenMode() {
-        Log.d(TAG, "disablePenMode: Deactivating Pen Mode");
+        Log.d(TAG, "disablePenMode: Disable Pen Mode");
         SystemProperties.set("persist.vendor.parts.pen", "2");
-        mRefreshRateUtils.setDefaultRefreshRate();
+        Log.d(TAG, "disablePenMode: Resetting Refresh Rate Values");
+        mRefreshUtils.setDefaultRefreshRate();
     }
 
     private static void refreshPenMode() {
-        boolean isStylusEnabled = mPreferences.getBoolean(STYLUS_KEY, false);
-        boolean isPenDetected = isStylusEnabled || isDeviceXiaomiPen();
-
-        if (isPenDetected) {
-            if (DEBUG) Log.d(TAG, "refreshPenMode: Pen or stylus mode enabled");
-            enablePenMode();
-        } else {
-            if (DEBUG) Log.d(TAG, "refreshPenMode: Pen not detected, disabling pen mode");
-            disablePenMode();
-        }
-    }
-
-    private static boolean isDeviceXiaomiPen() {
         for (int id : mInputManager.getInputDeviceIds()) {
-            InputDevice inputDevice = mInputManager.getInputDevice(id);
-            if (inputDevice != null &&
-                inputDevice.getVendorId() == PEN_VENDOR_ID &&
-                inputDevice.getProductId() == PEN_PRODUCT_ID) {
-            return true;
+            if (isDeviceXiaomiPen(id) || preferences.getBoolean(STYLUS_KEY, false)) {
+                if (DEBUG) Log.d(TAG, "refreshPenMode: Found Xiaomi Pen");
+                enablePenMode();
+                return;
             }
         }
-        return false;
+        if (DEBUG) Log.d(TAG, "refreshPenMode: No Xiaomi Pen found");
+        disablePenMode();
+    }
+
+    private static boolean isDeviceXiaomiPen(int id) {
+        InputDevice inputDevice = mInputManager.getInputDevice(id);
+        return inputDevice.getVendorId() == penVendorId &&
+                inputDevice.getProductId() == penProductId;
     }
 
     private static InputDeviceListener mInputDeviceListener = new InputDeviceListener() {
-        @Override
-        public void onInputDeviceAdded(int id) {
-            refreshPenMode();
-        }
-
-        @Override
-        public void onInputDeviceRemoved(int id) {
-            refreshPenMode();
-        }
-
-        @Override
-        public void onInputDeviceChanged(int id) {
-            refreshPenMode();
-        }
-    };
+            @Override
+            public void onInputDeviceAdded(int id) {
+                refreshPenMode();
+            }
+            @Override
+            public void onInputDeviceRemoved(int id) {
+                refreshPenMode();
+            }
+            @Override
+            public void onInputDeviceChanged(int id) {
+                refreshPenMode();
+            }
+        };
 }
