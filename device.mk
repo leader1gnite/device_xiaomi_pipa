@@ -6,6 +6,7 @@
 
 TARGET_IS_VAB := true
 TARGET_IS_TABLET := true
+PRODUCT_CHARACTERISTICS := tablet,nosdcard
 
 # Inherit from sm8250-common
 $(call inherit-product, device/xiaomi/sm8250-common/kona.mk)
@@ -38,7 +39,7 @@ DEVICE_PACKAGE_OVERLAYS += \
     $(LOCAL_PATH)/overlay-lineage
 
 # Peripheral Manager
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
     XiaomiPeripheralManager
 
 # Permissions
