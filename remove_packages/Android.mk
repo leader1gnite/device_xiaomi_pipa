@@ -15,13 +15,16 @@ LOCAL_OVERRIDES_PACKAGES := \
    com.google.android.dialer.support \
    Contacts \
    Dialer \
+   Messages\
+   PrebuiltBugle\
    GoogleContacts \
    GoogleDialer \
    GoogleMessages \
    messaging \
    Mms \
    TeleService \
-   SafetyHubSuwPrebuilt
+   SafetyHubSuwPrebuilt\
+   AndroidAutoStubPrebuilt
 LOCAL_UNINSTALLABLE_MODULE := true
 LOCAL_CERTIFICATE := PRESIGNED
 LOCAL_SRC_FILES := /dev/null
