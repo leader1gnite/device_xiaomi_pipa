@@ -17,11 +17,11 @@ LOCAL_OVERRIDES_PACKAGES := \
    Dialer \
    GoogleContacts \
    GoogleDialer \
-   Messages \
+   GoogleMessages \
    messaging \
    Mms \
-   PersonalSafety \
-   TeleService
+   TeleService \
+   SafetyHubSuwPrebuilt
 LOCAL_UNINSTALLABLE_MODULE := true
 LOCAL_CERTIFICATE := PRESIGNED
 LOCAL_SRC_FILES := /dev/null
